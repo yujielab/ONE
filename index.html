@@ -52,6 +52,14 @@
         .spd-btn{background:transparent;border:1px solid rgba(255,106,0,0.4);color:var(--orange);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;transition:all .2s}
         .spd-btn:hover{background:rgba(255,106,0,0.15)}
         .spd-btn.on{background:var(--orange);color:#000;border-color:var(--orange);box-shadow:0 0 15px rgba(255,106,0,0.5)}
+
+        .skill-bar{display:flex;gap:6px;background:rgba(5,10,15,0.85);padding:8px 10px;border-radius:14px;border:1px solid rgba(0,212,255,0.25);pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:360px}
+        .skill-btn{display:flex;align-items:center;gap:6px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--cyan);padding:6px 10px;border-radius:10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;position:relative}
+        .skill-btn svg{width:14px;height:14px;stroke:var(--cyan);fill:none}
+        .skill-btn.active{background:var(--cyan);color:#000;border-color:var(--cyan)}
+        .skill-btn.active svg{stroke:#000}
+        .skill-btn.disabled{opacity:0.35;cursor:not-allowed}
+        .skill-cd{position:absolute;top:-6px;right:-4px;background:rgba(0,0,0,0.8);color:var(--cyan);border:1px solid rgba(0,212,255,0.4);font-size:8px;padding:2px 5px;border-radius:10px}
         
         .dock{background:rgba(5,15,20,0.95);padding:6px;border-radius:30px;border:1px solid rgba(0,212,255,0.25);display:flex;gap:4px;pointer-events:auto;box-shadow:0 0 40px rgba(0,0,0,0.5),0 0 20px rgba(0,212,255,0.1)}
         .btn{width:46px;height:46px;border-radius:50%;border:1px solid transparent;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s var(--ease)}
@@ -81,6 +89,9 @@
         .blackhole{position:absolute;width:calc(var(--cell)*1.2);height:calc(var(--cell)*1.2);border-radius:50%;z-index:5;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(circle,#000 0%,#000 40%,transparent 70%);box-shadow:0 0 30px 10px rgba(128,0,255,0.5),inset 0 0 20px rgba(128,0,255,0.8);animation:bhPulse 2s ease-in-out infinite}
         .blackhole::before{content:'';position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(128,0,255,0.6);animation:bhRing 3s linear infinite}
         .blackhole::after{content:'';position:absolute;inset:-20px;border-radius:50%;border:1px dashed rgba(128,0,255,0.3);animation:bhRing 5s linear infinite reverse}
+
+        .portal{position:absolute;width:calc(var(--cell)*1.1);height:calc(var(--cell)*1.1);border-radius:50%;z-index:6;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(circle,rgba(0,212,255,0.3) 0%,rgba(0,212,255,0.05) 60%,transparent 70%);border:2px solid rgba(0,212,255,0.8);box-shadow:0 0 20px rgba(0,212,255,0.6);animation:portalPulse 2.2s ease-in-out infinite}
+        .portal::after{content:'';position:absolute;inset:6px;border-radius:50%;border:1px dashed rgba(0,212,255,0.6);animation:bhRing 4s linear infinite}
         
         .bomb{position:absolute;width:var(--cell);height:var(--cell);z-index:12;transform:translate(-50%,-50%);pointer-events:none;display:flex;align-items:center;justify-content:center}
         .bomb svg{width:28px;height:28px;stroke:#ff3366;fill:none;filter:drop-shadow(0 0 8px #ff3366);animation:bombPulse 0.5s ease-in-out infinite}
@@ -93,10 +104,16 @@
         @keyframes bhRing{to{transform:rotate(360deg)}}
         @keyframes bombPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
         @keyframes shieldPulse{0%,100%{opacity:1}50%{opacity:0.6}}
+        @keyframes portalPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.05)}}
         
         .marker{position:absolute;width:6px;height:6px;background:#fff;border-radius:50%;z-index:11;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 10px #fff,0 0 20px #fff}
         .win-line{position:absolute;height:4px;border-radius:2px;z-index:20;pointer-events:none;background:linear-gradient(90deg,#fff,rgba(255,255,255,0.8));box-shadow:0 0 20px #fff,0 0 40px #fff;transform-origin:left center;animation:winPulse .6s infinite}
         @keyframes winPulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+        .fx{position:absolute;width:calc(var(--cell)*1.6);height:calc(var(--cell)*1.6);border-radius:50%;z-index:30;transform:translate(-50%,-50%);pointer-events:none;border:2px solid rgba(0,212,255,0.8);box-shadow:0 0 30px rgba(0,212,255,0.7);animation:fxRing .6s ease-out forwards}
+        .fx.orange{border-color:rgba(255,106,0,0.9);box-shadow:0 0 30px rgba(255,106,0,0.8)}
+        .fx.purple{border-color:rgba(168,85,247,0.9);box-shadow:0 0 30px rgba(168,85,247,0.8)}
+        @keyframes fxRing{from{opacity:1;transform:translate(-50%,-50%) scale(0.4)}to{opacity:0;transform:translate(-50%,-50%) scale(1.2)}}
         
         .ghost{position:absolute;width:var(--cell);height:var(--cell);border-radius:50%;z-index:9;pointer-events:none;transform:translate(-50%,-50%) scale(0.8);opacity:0;transition:opacity .1s;border:2px dashed rgba(0,212,255,0.5);background:rgba(0,212,255,0.05)}
         .ghost.show{opacity:.7}
@@ -171,6 +188,10 @@
                 <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 2v20M5 15l7 7 7-7"/></svg>
                 GRAVITY
             </button>
+            <button class="mode-btn" data-mode="portal">
+                <svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="7" cy="12" r="4"/><circle cx="17" cy="12" r="4"/><path d="M11 12h2"/></svg>
+                PORTAL
+            </button>
         </div>
         <div id="learn-box" class="learn-box">
             <div class="learn-title">
@@ -185,6 +206,23 @@
             <button class="spd-btn on" data-s="2">2X</button>
             <button class="spd-btn" data-s="4">4X</button>
             <button class="spd-btn" data-s="8">8X</button>
+        </div>
+        <div id="skill-bar" class="skill-bar">
+            <button class="skill-btn" data-skill="pulse" title="Pulse">
+                <svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>
+                PULSE
+                <span class="skill-cd">0</span>
+            </button>
+            <button class="skill-btn" data-skill="barrier" title="Barrier">
+                <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg>
+                BARRIER
+                <span class="skill-cd">0</span>
+            </button>
+            <button class="skill-btn" data-skill="nova" title="Nova">
+                <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+                NOVA
+                <span class="skill-cd">0</span>
+            </button>
         </div>
         <div class="dock">
             <button class="btn" id="b-center" title="Center">
@@ -234,10 +272,17 @@ const G = {
     zobrist: null,
     hash: 0,
     blackholes: [],
+    portals: [],
     bombs: {},
     shields: {},
     fogRadius: 3,
-    modeMenuOpen: false
+    modeMenuOpen: false,
+    skillMode: null,
+    skills: {
+        pulse: {cd: 0, max: 4},
+        barrier: {cd: 0, max: 6},
+        nova: {cd: 0, max: 5}
+    }
 };
 
 const AI = {
@@ -263,6 +308,7 @@ function initZobrist() {
 }
 
 const idx = (x,y) => (y+9)*19+(x+9);
+const keyOf = (x,y) => `${x},${y}`;
 const fromIdx = i => [i%19-9, Math.floor(i/19)-9];
 const valid = (x,y) => x>=-9 && x<=9 && y>=-9 && y<=9;
 const get = (x,y) => valid(x,y) ? G.board[idx(x,y)] : 3;
@@ -270,6 +316,10 @@ const set = (x,y,v) => { if(valid(x,y)) G.board[idx(x,y)]=v; };
 
 function isBlackhole(x,y) {
     return G.blackholes.some(b => b.x===x && b.y===y);
+}
+
+function isPortal(x,y) {
+    return G.portals.some(p => p.x===x && p.y===y);
 }
 
 const PATTERNS = [
@@ -551,50 +601,84 @@ function applyGravity(x,y) {
     return {x, y: finalY};
 }
 
-function triggerBomb(x,y,role) {
-    const affected = [];
-    for(let dx=-1;dx<=1;dx++) {
-        for(let dy=-1;dy<=1;dy++) {
-            const nx=x+dx, ny=y+dy;
-            if(valid(nx,ny) && get(nx,ny)!==0 && !isBlackhole(nx,ny)) {
-                const key = `,`;
-                if(!G.shields[key]) affected.push({x:nx,y:ny});
-            }
-        }
+function resolveLanding(x,y) {
+    let fx = x;
+    let fy = y;
+    if(G.gameMode === 'gravity') {
+        const grav = applyGravity(fx,fy);
+        fx = grav.x;
+        fy = grav.y;
     }
-    affected.forEach(p => remove(p.x,p.y));
-    delete G.bombs[`,`];
-    pcs.querySelectorAll('.bomb').forEach(el => {
-        if(+el.dataset.gx===x && +el.dataset.gy===y) el.remove();
+    if(G.gameMode === 'portal') {
+        const exit = portalExit(fx,fy);
+        if(exit) { fx = exit.x; fy = exit.y; }
+    }
+    return {x:fx,y:fy};
+}
+
+function portalExit(x,y) {
+    if(G.gameMode !== 'portal') return null;
+    const idxPortal = G.portals.findIndex(p => p.x===x && p.y===y);
+    if(idxPortal === -1 || G.portals.length < 2) return null;
+    const target = G.portals[idxPortal === 0 ? 1 : 0];
+    if(get(target.x,target.y)!==0 || isBlackhole(target.x,target.y)) return null;
+    return target;
+}
+
+function resolveBlackholes() {
+    if(G.gameMode !== 'blackhole') return;
+    const pulled = [];
+    const seen = new Set();
+    G.blackholes.forEach(b => {
+        const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+        dirs.forEach(([dx,dy]) => {
+            const nx = b.x + dx;
+            const ny = b.y + dy;
+            if(valid(nx,ny) && get(nx,ny)!==0) {
+                const key = keyOf(nx,ny);
+                if(!G.shields[key] && !seen.has(key)) {
+                    seen.add(key);
+                    pulled.push({x:nx,y:ny});
+                }
+            }
+        });
+    });
+    pulled.forEach(p => {
+        remove(p.x,p.y);
+        spawnFx(p.x,p.y,'purple');
     });
 }
 
-function play(x,y) {
-    if(G.over || isBlackhole(x,y)) return;
-    
-    let finalX = x, finalY = y;
-    if(G.gameMode === 'gravity') {
-        const grav = applyGravity(x,y);
-        finalX = grav.x; finalY = grav.y;
-    }
-    
-    if(get(finalX,finalY)!==0) return;
-    
-    place(finalX,finalY,G.turn);
-    
-    const bombKey = `,`;
-    if(G.bombs[bombKey]) triggerBomb(finalX,finalY,G.turn);
-    
-    const win = checkWin(finalX,finalY,G.turn);
-    if(win) {
-        drawWinLine(win);
-        endGame(G.turn);
-        return;
-    }
-    
+function addShield(x,y) {
+    const key = keyOf(x,y);
+    if(!G.shields[key]) G.shields[key] = true;
+    const exists = [...pcs.querySelectorAll('.shield')].some(el => +el.dataset.gx===x && +el.dataset.gy===y);
+    if(exists) return;
+    const el = document.createElement('div');
+    el.className = 'shield';
+    el.dataset.gx = x;
+    el.dataset.gy = y;
+    pcs.appendChild(el);
+}
+
+function spawnFx(x,y, tone='cyan') {
+    const el = document.createElement('div');
+    el.className = 'fx';
+    if(tone === 'orange') el.classList.add('orange');
+    if(tone === 'purple') el.classList.add('purple');
+    el.dataset.gx = x;
+    el.dataset.gy = y;
+    pcs.appendChild(el);
+    setTimeout(()=>el.remove(), 650);
+}
+
+function advanceTurn() {
     G.turn = 3-G.turn;
+    if(G.turn === 1) tickCooldowns();
     if(G.vision) updateVision();
-    
+    if(G.turn === 2) clearSkillMode();
+    updateSkillsUI();
+
     if(G.mode==='train' || (G.mode==='pve' && G.turn===2)) {
         setStatus('PROCESSING', true);
         const delay = G.mode==='train' ? Math.max(20,100/G.spd) : 280;
@@ -602,6 +686,142 @@ function play(x,y) {
     } else {
         setStatus('YOUR TURN', false);
     }
+}
+
+function tickCooldowns() {
+    Object.values(G.skills).forEach(skill => {
+        if(skill.cd > 0) skill.cd -= 1;
+    });
+    updateSkillsUI();
+}
+
+function handleSkill(x,y) {
+    if(G.turn !== 1 || G.mode === 'train') return false;
+    const skill = G.skillMode;
+    if(!skill) return false;
+    const data = G.skills[skill];
+    if(!data || data.cd > 0) return false;
+
+    if(skill === 'pulse') {
+        if(get(x,y) !== 2 || isBlackhole(x,y)) { toast('TARGET ENEMY'); return true; }
+        if(G.shields[keyOf(x,y)]) { toast('TARGET SHIELDED'); return true; }
+        remove(x,y);
+        spawnFx(x,y,'purple');
+        if(G.gameMode === 'blackhole') resolveBlackholes();
+        data.cd = data.max;
+        clearSkillMode();
+        advanceTurn();
+        return true;
+    }
+    if(skill === 'barrier') {
+        if(get(x,y)!==0 || isBlackhole(x,y)) { toast('TARGET EMPTY'); return true; }
+        addShield(x,y);
+        spawnFx(x,y,'cyan');
+        if(G.gameMode === 'blackhole') resolveBlackholes();
+        data.cd = data.max;
+        clearSkillMode();
+        advanceTurn();
+        return true;
+    }
+    if(skill === 'nova') {
+        if(get(x,y)!==0 || isBlackhole(x,y)) { toast('TARGET EMPTY'); return true; }
+        place(x,y,1);
+        const bombKey = keyOf(x,y);
+        if(G.bombs[bombKey]) triggerBomb(x,y,1);
+        const adj = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
+        adj.forEach(([dx,dy]) => {
+            const nx=x+dx, ny=y+dy;
+            if(valid(nx,ny) && get(nx,ny)===2 && !G.shields[keyOf(nx,ny)]) {
+                remove(nx,ny);
+                spawnFx(nx,ny,'orange');
+            }
+        });
+        if(G.gameMode === 'blackhole') resolveBlackholes();
+        data.cd = data.max;
+        clearSkillMode();
+        if(get(x,y)!==0) {
+            const win = checkWin(x,y,1);
+            if(win) {
+                drawWinLine(win);
+                endGame(1);
+                return true;
+            }
+        }
+        advanceTurn();
+        return true;
+    }
+    return false;
+}
+
+function clearSkillMode() {
+    G.skillMode = null;
+    document.querySelectorAll('.skill-btn').forEach(b => b.classList.remove('active'));
+    updateSkillsUI();
+}
+
+function updateSkillsUI() {
+    document.querySelectorAll('.skill-btn').forEach(btn => {
+        const key = btn.dataset.skill;
+        const data = G.skills[key];
+        if(!data) return;
+        const cdEl = btn.querySelector('.skill-cd');
+        if(cdEl) cdEl.textContent = data.cd;
+        const disabled = data.cd > 0 || G.turn !== 1 || G.over || G.mode === 'train';
+        btn.classList.toggle('disabled', disabled);
+    });
+}
+
+function triggerBomb(x,y,role) {
+    const affected = [];
+    for(let dx=-1;dx<=1;dx++) {
+        for(let dy=-1;dy<=1;dy++) {
+            const nx=x+dx, ny=y+dy;
+            if(valid(nx,ny) && get(nx,ny)!==0 && !isBlackhole(nx,ny)) {
+                const key = keyOf(nx,ny);
+                if(!G.shields[key]) affected.push({x:nx,y:ny});
+            }
+        }
+    }
+    affected.forEach(p => remove(p.x,p.y));
+    delete G.bombs[keyOf(x,y)];
+    pcs.querySelectorAll('.bomb').forEach(el => {
+        if(+el.dataset.gx===x && +el.dataset.gy===y) el.remove();
+    });
+}
+
+function play(x,y) {
+    if(G.over || isBlackhole(x,y)) return;
+
+    if(G.skillMode) {
+        if(handleSkill(x,y)) return;
+    }
+    
+    let finalX = x, finalY = y;
+    const landing = resolveLanding(x,y);
+    finalX = landing.x; finalY = landing.y;
+    if(G.gameMode === 'portal' && (finalX !== x || finalY !== y)) {
+        spawnFx(finalX, finalY, 'purple');
+    }
+    
+    if(get(finalX,finalY)!==0) return;
+    
+    place(finalX,finalY,G.turn);
+
+    const bombKey = keyOf(finalX,finalY);
+    if(G.bombs[bombKey]) triggerBomb(finalX,finalY,G.turn);
+
+    if(G.gameMode === 'blackhole') resolveBlackholes();
+
+    if(get(finalX,finalY)!==0) {
+        const win = checkWin(finalX,finalY,G.turn);
+        if(win) {
+            drawWinLine(win);
+            endGame(G.turn);
+            return;
+        }
+    }
+
+    advanceTurn();
 }
 
 function place(x,y,role) {
@@ -620,6 +840,7 @@ function place(x,y,role) {
     if(m) { m.dataset.gx=x; m.dataset.gy=y; m.style.opacity='1'; }
     
     if(G.mode!=='train') { playSound(role===1?'b':'w'); haptic(5); }
+    spawnFx(x,y, role===1 ? 'cyan' : 'orange');
     smoothPan(x,y);
     updUndo();
 }
@@ -651,6 +872,7 @@ function endGame(winner) {
     G.over = true;
     document.getElementById('ghost')?.classList.remove('show');
     clearVision();
+    clearSkillMode();
     
     if(G.mode==='train') {
         learn(winner);
@@ -688,7 +910,7 @@ function initBlackholes() {
         do {
             x = Math.floor(Math.random()*13)-6;
             y = Math.floor(Math.random()*13)-6;
-            key = `,`;
+            key = keyOf(x,y);
         } while(used.has(key) || (Math.abs(x)<2 && Math.abs(y)<2));
         
         used.add(key);
@@ -708,7 +930,7 @@ function initBombs() {
         do {
             x = Math.floor(Math.random()*13)-6;
             y = Math.floor(Math.random()*13)-6;
-            key = `,`;
+            key = keyOf(x,y);
         } while(used.has(key) || (Math.abs(x)<2 && Math.abs(y)<2));
         
         used.add(key);
@@ -716,14 +938,36 @@ function initBombs() {
     }
 }
 
+function initPortals() {
+    G.portals = [];
+    if(G.gameMode !== 'portal') return;
+    const used = new Set(['0,0']);
+    while(G.portals.length < 2) {
+        const x = Math.floor(Math.random()*13)-6;
+        const y = Math.floor(Math.random()*13)-6;
+        const key = keyOf(x,y);
+        if(used.has(key) || (Math.abs(x)<2 && Math.abs(y)<2)) continue;
+        used.add(key);
+        G.portals.push({x,y});
+    }
+}
+
 function renderSpecialElements() {
-    pcs.querySelectorAll('.blackhole,.bomb,.shield').forEach(e=>e.remove());
+    pcs.querySelectorAll('.blackhole,.bomb,.shield,.portal').forEach(e=>e.remove());
     
     G.blackholes.forEach(b => {
         const el = document.createElement('div');
         el.className = 'blackhole';
         el.dataset.gx = b.x;
         el.dataset.gy = b.y;
+        pcs.appendChild(el);
+    });
+
+    G.portals.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'portal';
+        el.dataset.gx = p.x;
+        el.dataset.gy = p.y;
         pcs.appendChild(el);
     });
     
@@ -735,6 +979,11 @@ function renderSpecialElements() {
         el.dataset.gy = y;
         el.innerHTML = '<svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="14" r="8"/><path d="M12 6V2m-2 4h4"/><path d="M15 11l2-2"/></svg>';
         pcs.appendChild(el);
+    });
+
+    Object.keys(G.shields).forEach(key => {
+        const [x,y] = key.split(',').map(Number);
+        addShield(x,y);
     });
 }
 
@@ -749,9 +998,12 @@ function restart() {
     G.hash = 0;
     G.shields = {};
     AI.tt.clear();
+    G.skillMode = null;
+    Object.values(G.skills).forEach(s => s.cd = 0);
     
     initBlackholes();
     initBombs();
+    initPortals();
     
     pcs.innerHTML = '<div id="marker" class="marker" style="opacity:0"></div><div id="ghost" class="ghost"></div>';
     
@@ -759,6 +1011,7 @@ function restart() {
     
     center();
     updUndo();
+    updateSkillsUI();
     if(G.vision) setTimeout(updateVision, 60);
     
     if(G.mode==='train') {
@@ -851,18 +1104,26 @@ function setGameMode(mode) {
     tag.textContent = mode.toUpperCase();
     tag.classList.add('show');
     
-    toast(`MODE: `);
+    toast(`MODE: ${mode.toUpperCase()}`);
     toggleModeMenu();
     restart();
 }
 
 function toggleVision() {
-    if(!G.vision) { G.vision=true; G.vMode=0; }
-    else { G.vMode=(G.vMode+1)%4; if(G.vMode===0) G.vision=false; }
+    const names = ['SCORE','ATTACK','DEFENSE'];
+    if(!G.vision) {
+        G.vision=true;
+        G.vMode=0;
+        toast(`VISION: ${names[G.vMode]}`);
+    } else if(G.vMode < 2) {
+        G.vMode += 1;
+        toast(`VISION: ${names[G.vMode]}`);
+    } else {
+        G.vision = false;
+        toast('VISION: OFF');
+    }
     
     document.getElementById('b-vision').classList.toggle('on', G.vision);
-    const names = ['OFF','SCORE','ATTACK','DEFENSE'];
-    toast(`VISION: `);
     
     if(G.vision) updateVision(); else clearVision();
 }
@@ -913,6 +1174,7 @@ let W, H;
 function resize() {
     W = cv.width = innerWidth * devicePixelRatio;
     H = cv.height = innerHeight * devicePixelRatio;
+    ctx.setTransform(1,0,0,1,0,0);
     ctx.scale(devicePixelRatio, devicePixelRatio);
 }
 
@@ -996,7 +1258,7 @@ function syncDOM(cx,cy) {
             el.style.left = sx+'px';
             el.style.top = sy+'px';
             el.style.width = len+'px';
-            el.style.transform = `translateY(-50%) rotate(rad)`;
+            el.style.transform = `translateY(-50%) rotate(${angle}rad)`;
             continue;
         }
         
@@ -1041,8 +1303,13 @@ function onMove(e) {
         const gx = Math.round((CAM.x+e.clientX-innerWidth/2)/CELL);
         const gy = Math.round((CAM.y+e.clientY-innerHeight/2)/CELL);
         const gh = document.getElementById('ghost');
-        if(gh && valid(gx,gy) && get(gx,gy)===0 && !isBlackhole(gx,gy)) {
-            gh.dataset.gx=gx; gh.dataset.gy=gy; gh.classList.add('show');
+        if(gh && valid(gx,gy) && !isBlackhole(gx,gy)) {
+            const landing = resolveLanding(gx,gy);
+            if(valid(landing.x,landing.y) && get(landing.x,landing.y)===0 && !isBlackhole(landing.x,landing.y)) {
+                gh.dataset.gx=landing.x; gh.dataset.gy=landing.y; gh.classList.add('show');
+            } else {
+                gh.classList.remove('show');
+            }
         } else if(gh) gh.classList.remove('show');
     }
 }
@@ -1126,6 +1393,25 @@ function init() {
             G.spd = +b.dataset.s;
             document.querySelectorAll('.spd-btn').forEach(x=>x.classList.remove('on'));
             b.classList.add('on');
+        };
+    });
+
+    document.querySelectorAll('.skill-btn').forEach(btn => {
+        btn.onclick = () => {
+            const key = btn.dataset.skill;
+            const data = G.skills[key];
+            if(!data || data.cd > 0 || G.over || G.turn !== 1 || G.mode === 'train') {
+                toast('SKILL COOLDOWN');
+                return;
+            }
+            if(G.skillMode === key) {
+                clearSkillMode();
+                return;
+            }
+            G.skillMode = key;
+            document.querySelectorAll('.skill-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            toast(`SKILL: ${key.toUpperCase()}`);
         };
     });
     
