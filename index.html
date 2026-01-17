@@ -707,7 +707,23 @@ async function aiMoveRemote(gid) {
             G.superAI = false;
             updateSuperUI();
         }
-        toast('SUPER AI FALLBACK');
+        const message = err?.message ?? err?.cause?.message ?? '';
+        const isConnectionError = err?.name === 'AbortError'
+            || err instanceof TypeError
+            || /Failed to fetch/i.test(message)
+            || /NetworkError/i.test(message)
+            || /Network/i.test(message)
+            || /ECONNREFUSED/i.test(message)
+            || /ENOTFOUND/i.test(message)
+            || /ETIMEDOUT/i.test(message)
+            || /ERR_NAME_NOT_RESOLVED/i.test(message)
+            || /ERR_NETWORK/i.test(message);
+        if(isConnectionError) {
+            toast('无法连接');
+            setStatus('无法连接', false);
+        } else {
+            toast('SUPER AI FALLBACK');
+        }
         aiMoveLocal(gid);
     } finally {
         if(timeout) clearTimeout(timeout);
