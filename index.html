@@ -26,6 +26,7 @@
         
         .mode-tag{background:rgba(168,85,247,0.2);border:1px solid var(--purple);padding:4px 12px;border-radius:12px;font-size:10px;color:var(--purple);letter-spacing:1px;display:none}
         .mode-tag.show{display:block}
+        .mode-tag.ai-tag{background:rgba(255,106,0,0.2);border-color:var(--orange);color:var(--orange)}
         
         .stats{background:rgba(30,15,0,0.85);padding:0 16px;height:40px;border-radius:20px;display:none;align-items:center;gap:12px;font-size:11px;border:1px solid var(--orange);box-shadow:0 0 20px rgba(255,106,0,0.2)}
         .stat{display:flex;flex-direction:column;align-items:center;color:var(--orange)}
@@ -52,6 +53,16 @@
         .spd-btn{background:transparent;border:1px solid rgba(255,106,0,0.4);color:var(--orange);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;transition:all .2s}
         .spd-btn:hover{background:rgba(255,106,0,0.15)}
         .spd-btn.on{background:var(--orange);color:#000;border-color:var(--orange);box-shadow:0 0 15px rgba(255,106,0,0.5)}
+
+        .ai-panel{background:rgba(0,20,30,0.92);border-radius:16px;padding:12px 14px;border:1px solid rgba(255,106,0,0.35);display:none;pointer-events:auto;gap:10px;flex-direction:column;max-width:360px;box-shadow:0 0 30px rgba(255,106,0,0.15)}
+        .ai-panel.show{display:flex}
+        .ai-head{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--orange)}
+        .ai-toggle{background:transparent;border:1px solid rgba(255,106,0,0.5);color:var(--orange);padding:4px 12px;border-radius:10px;font-size:9px;cursor:pointer;transition:all .2s}
+        .ai-toggle.on{background:var(--orange);color:#000;border-color:var(--orange);box-shadow:0 0 15px rgba(255,106,0,0.4)}
+        .ai-fields{display:flex;flex-direction:column;gap:6px;font-size:9px;color:rgba(255,106,0,0.75)}
+        .ai-fields label{display:flex;flex-direction:column;gap:4px}
+        .ai-fields input{background:rgba(0,0,0,0.6);border:1px solid rgba(255,106,0,0.3);border-radius:8px;padding:6px 8px;color:var(--orange);font-size:10px}
+        .ai-hint{font-size:8px;line-height:1.4;color:rgba(255,106,0,0.55)}
 
         .skill-bar{display:flex;gap:6px;background:rgba(5,10,15,0.85);padding:8px 10px;border-radius:14px;border:1px solid rgba(0,212,255,0.25);pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:360px}
         .skill-btn{display:flex;align-items:center;gap:6px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--cyan);padding:6px 10px;border-radius:10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;position:relative}
@@ -160,6 +171,7 @@
             <span id="status" class="status">YOUR TURN</span>
         </div>
         <div id="mode-tag" class="mode-tag">CLASSIC</div>
+        <div id="ai-tag" class="mode-tag ai-tag">AI OVERKILL</div>
         <div id="stats" class="stats">
             <div class="stat"><b id="st-g">0</b><span>GAMES</span></div>
             <div class="stat"><b id="st-w">50%</b><span>CYAN</span></div>
@@ -207,6 +219,27 @@
             <button class="spd-btn" data-s="4">4X</button>
             <button class="spd-btn" data-s="8">8X</button>
         </div>
+        <div id="ai-panel" class="ai-panel">
+            <div class="ai-head">
+                <span>AI OVERKILL</span>
+                <button id="ai-toggle" class="ai-toggle">OFF</button>
+            </div>
+            <div class="ai-fields">
+                <label>
+                    ENDPOINT
+                    <input id="ai-endpoint" type="text" placeholder="https://api.vectorengine.ai">
+                </label>
+                <label>
+                    MODEL
+                    <input id="ai-model" type="text" value="claude-opus-4-5-20251101">
+                </label>
+                <label>
+                    API KEY
+                    <input id="ai-key" type="password" placeholder="sk-...">
+                </label>
+            </div>
+            <div class="ai-hint">提示：保存后自动记忆，仅在 AI 回合时调用远端模型。</div>
+        </div>
         <div id="skill-bar" class="skill-bar">
             <button class="skill-btn" data-skill="pulse" title="Pulse">
                 <svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>
@@ -236,6 +269,9 @@
             </button>
             <button class="btn" id="b-mode" title="Mode">
                 <svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </button>
+            <button class="btn" id="b-ai" title="AI Overkill">
+                <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
             <button class="btn" id="b-train" title="Train">
                 <svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>
@@ -282,6 +318,14 @@ const G = {
         pulse: {cd: 0, max: 4},
         barrier: {cd: 0, max: 6},
         nova: {cd: 0, max: 5}
+    },
+    ai: {
+        enabled: false,
+        endpoint: 'https://api.vectorengine.ai',
+        model: 'claude-opus-4-5-20251101',
+        apiKey: '',
+        panelOpen: false,
+        lastError: ''
     }
 };
 
@@ -331,6 +375,8 @@ const AI = {
     tt: new Map()
 };
 
+const AI_CONFIG_KEY = 'gomoku-ai-overkill-config';
+
 const CAM = {x:0,y:0,tx:0,ty:0,sx:0,sy:0,anim:false,t0:0,drag:false};
 
 const cv = document.getElementById('cv');
@@ -357,6 +403,161 @@ function isBlackhole(x,y) {
 
 function isPortal(x,y) {
     return G.portals.some(p => p.x===x && p.y===y);
+}
+
+function loadAiConfig() {
+    const raw = localStorage.getItem(AI_CONFIG_KEY);
+    if(!raw) return;
+    try {
+        const data = JSON.parse(raw);
+        if(typeof data.endpoint === 'string') G.ai.endpoint = data.endpoint;
+        if(typeof data.model === 'string') G.ai.model = data.model;
+        if(typeof data.apiKey === 'string') G.ai.apiKey = data.apiKey;
+        if(typeof data.enabled === 'boolean') G.ai.enabled = data.enabled;
+    } catch {}
+    if(G.ai.enabled && !G.ai.apiKey) G.ai.enabled = false;
+}
+
+function saveAiConfig() {
+    const payload = {
+        endpoint: G.ai.endpoint,
+        model: G.ai.model,
+        apiKey: G.ai.apiKey,
+        enabled: G.ai.enabled
+    };
+    localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(payload));
+}
+
+function applyAiUi() {
+    const tag = document.getElementById('ai-tag');
+    const toggle = document.getElementById('ai-toggle');
+    tag.classList.toggle('show', G.ai.enabled);
+    toggle.classList.toggle('on', G.ai.enabled);
+    toggle.textContent = G.ai.enabled ? 'ON' : 'OFF';
+}
+
+function toggleAiPanel() {
+    G.ai.panelOpen = !G.ai.panelOpen;
+    document.getElementById('ai-panel').classList.toggle('show', G.ai.panelOpen);
+    document.getElementById('b-ai').classList.toggle('on', G.ai.panelOpen);
+}
+
+function normalizeEndpoint(endpoint) {
+    if(!endpoint) return '';
+    const trimmed = endpoint.trim().replace(/\/+$/,'');
+    if(!trimmed) return '';
+    if(/\/v1\/chat\/completions$/.test(trimmed)) return trimmed;
+    return `${trimmed}/v1/chat/completions`;
+}
+
+function boardMarkdown() {
+    const xs = [];
+    for(let x=-9;x<=9;x++) xs.push(x);
+    const header = `|y\\\\x|${xs.map(x=>` ${x} `).join('|')}|`;
+    const sep = `|---|${xs.map(()=>`---`).join('|')}|`;
+    const lines = [header, sep];
+    for(let y=9;y>=-9;y--) {
+        const cells = xs.map(x => {
+            const piece = get(x,y);
+            if(piece===1) return 'X';
+            if(piece===2) return 'O';
+            if(isBlackhole(x,y)) return 'BH';
+            if(isPortal(x,y)) return 'P';
+            if(G.bombs[keyOf(x,y)]) return 'B';
+            if(G.shields[keyOf(x,y)]) return 'S';
+            return '.';
+        });
+        lines.push(`| ${y} |${cells.map(c=>` ${c} `).join('|')}|`);
+    }
+    return lines.join('\n');
+}
+
+function buildOverkillPrompt() {
+    const last = G.hist[G.hist.length-1];
+    const lastMove = last ? `Last move: role ${last.role} at (${last.x},${last.y}).` : 'Last move: none.';
+    const specials = [
+        `Mode: ${G.gameMode}.`,
+        G.gameMode === 'gravity' ? 'Gravity: pieces fall downward (increasing y) until blocked.' : '',
+        G.gameMode === 'portal' ? `Portals at: ${G.portals.map(p=>`(${p.x},${p.y})`).join(' ') || 'none'}.` : '',
+        G.gameMode === 'blackhole' ? `Blackholes at: ${G.blackholes.map(b=>`(${b.x},${b.y})`).join(' ') || 'none'}.` : '',
+        G.gameMode === 'bomb' ? `Bombs at: ${Object.keys(G.bombs).join(' ') || 'none'}.` : '',
+        G.gameMode === 'fog' ? 'Fog mode: visibility is limited for players, but you have full board state.' : ''
+    ].filter(Boolean).join(' ');
+    return [
+        'You are the ORANGE player (O). Return ONLY a JSON object like {"x":0,"y":0} with a legal move.',
+        'Board symbols: X=CYAN, O=ORANGE, .=empty, BH=blackhole (illegal), P=portal, B=bomb, S=shield.',
+        specials,
+        lastMove,
+        'Board (markdown):',
+        boardMarkdown()
+    ].join('\n');
+}
+
+function extractContentFromResponse(text) {
+    try {
+        const data = JSON.parse(text);
+        if(data?.choices?.[0]?.message?.content) return data.choices[0].message.content;
+        if(data?.choices?.[0]?.text) return data.choices[0].text;
+        if(data?.output_text) return data.output_text;
+    } catch {}
+    return text;
+}
+
+function parseMove(text) {
+    if(!text) return null;
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if(jsonMatch) {
+        try {
+            const obj = JSON.parse(jsonMatch[0]);
+            if(Number.isFinite(obj.x) && Number.isFinite(obj.y)) return {x: obj.x, y: obj.y};
+        } catch {}
+    }
+    const labeled = text.match(/x\s*[:=]\s*(-?\d+)[^\d-]+y\s*[:=]\s*(-?\d+)/i);
+    if(labeled) return {x: +labeled[1], y: +labeled[2]};
+    const simple = text.match(/(-?\d+)\s*,\s*(-?\d+)/);
+    if(simple) return {x: +simple[1], y: +simple[2]};
+    return null;
+}
+
+async function requestOverkillMove(gid) {
+    if(gid !== G.gid || G.over || G.mode !== 'pve' || G.turn !== 2) return null;
+    const endpoint = normalizeEndpoint(G.ai.endpoint);
+    if(!endpoint || !G.ai.apiKey) return null;
+    setStatus('AI OVERKILL', true);
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    try {
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${G.ai.apiKey}`
+            },
+            body: JSON.stringify({
+                model: G.ai.model,
+                temperature: 0.2,
+                messages: [
+                    {role: 'system', content: 'You are a Gomoku engine. Respond with only JSON.'},
+                    {role: 'user', content: buildOverkillPrompt()}
+                ]
+            }),
+            signal: controller.signal
+        });
+        const text = await res.text();
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const content = extractContentFromResponse(text);
+        const move = parseMove(content);
+        if(move && valid(move.x, move.y) && get(move.x, move.y) === 0 && !isBlackhole(move.x, move.y)) {
+            return move;
+        }
+    } catch (err) {
+        G.ai.lastError = err?.message || 'AI OVERKILL FAILED';
+        toast('AI OVERKILL FAILED');
+    } finally {
+        clearTimeout(timer);
+    }
+    return null;
 }
 
 const PATTERNS = [
@@ -555,8 +756,16 @@ function minimax(depth, alpha, beta, maximizing, role, gid) {
     return best;
 }
 
-function aiMove(gid) {
+async function aiMove(gid) {
     if(gid !== G.gid || G.over) return;
+
+    if(G.ai.enabled && G.mode === 'pve' && G.turn === 2) {
+        const overkillMove = await requestOverkillMove(gid);
+        if(overkillMove) {
+            play(overkillMove.x, overkillMove.y);
+            return;
+        }
+    }
     
     const role = G.turn;
     const cands = getCandidates(2);
@@ -1378,6 +1587,7 @@ function haptic(d) { navigator.vibrate?.(d); }
 
 function init() {
     initZobrist();
+    loadAiConfig();
     
     addEventListener('resize', resize);
     resize();
@@ -1394,9 +1604,42 @@ function init() {
     document.getElementById('b-vision').onclick = toggleVision;
     document.getElementById('b-undo').onclick = undo;
     document.getElementById('b-mode').onclick = toggleModeMenu;
+    document.getElementById('b-ai').onclick = toggleAiPanel;
     document.getElementById('b-train').onclick = toggleTrain;
     document.getElementById('b-restart').onclick = ()=> restart();
     document.getElementById('modal-btn').onclick = closeModal;
+
+    const endpointInput = document.getElementById('ai-endpoint');
+    const modelInput = document.getElementById('ai-model');
+    const keyInput = document.getElementById('ai-key');
+    endpointInput.value = G.ai.endpoint;
+    modelInput.value = G.ai.model;
+    keyInput.value = G.ai.apiKey;
+    applyAiUi();
+
+    endpointInput.oninput = () => {
+        G.ai.endpoint = endpointInput.value;
+        saveAiConfig();
+    };
+    modelInput.oninput = () => {
+        G.ai.model = modelInput.value;
+        saveAiConfig();
+    };
+    keyInput.oninput = () => {
+        G.ai.apiKey = keyInput.value;
+        saveAiConfig();
+    };
+    document.getElementById('ai-toggle').onclick = () => {
+        const next = !G.ai.enabled;
+        if(next && !G.ai.apiKey) {
+            toast('ADD API KEY');
+            return;
+        }
+        G.ai.enabled = next;
+        applyAiUi();
+        saveAiConfig();
+        toast(`AI OVERKILL: ${G.ai.enabled ? 'ON' : 'OFF'}`);
+    };
     
     document.querySelectorAll('.mode-btn').forEach(b => {
         b.onclick = () => setGameMode(b.dataset.mode);
