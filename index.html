@@ -46,6 +46,14 @@
         .learn-title{font-size:10px;font-weight:700;color:var(--cyan);margin-bottom:6px;display:flex;align-items:center;gap:6px;letter-spacing:1px}
         .learn-title svg{width:14px;height:14px;stroke:var(--cyan);fill:none}
         .learn-log{font-size:9px;color:rgba(0,212,255,0.6);line-height:1.5;max-height:55px;overflow-y:auto;font-family:monospace}
+
+        .ai-panel{background:rgba(10,0,20,0.9);border-radius:12px;padding:12px 16px;border:1px solid rgba(168,85,247,0.35);max-width:92%;display:none;pointer-events:auto}
+        .ai-panel.show{display:block}
+        .ai-title{font-size:10px;font-weight:700;color:var(--purple);margin-bottom:6px;display:flex;align-items:center;gap:6px;letter-spacing:1px}
+        .ai-title svg{width:14px;height:14px;stroke:var(--purple);fill:none}
+        .ai-meta{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:9px;color:rgba(168,85,247,0.7);font-family:monospace}
+        .ai-meta span{opacity:0.6}
+        .ai-note{margin-top:6px;font-size:8px;color:rgba(168,85,247,0.55);letter-spacing:0.5px}
         
         .speed{display:none;align-items:center;gap:6px;background:rgba(0,0,0,0.6);padding:5px 12px;border-radius:12px;pointer-events:auto;border:1px solid rgba(255,106,0,0.3)}
         .speed span{font-size:9px;color:var(--orange);letter-spacing:0.5px}
@@ -75,6 +83,8 @@
         .btn.train-on svg{stroke:var(--orange);filter:drop-shadow(0 0 4px var(--orange))}
         .btn.mode-on{background:rgba(168,85,247,0.15);border-color:var(--purple)}
         .btn.mode-on svg{stroke:var(--purple);filter:drop-shadow(0 0 4px var(--purple))}
+        .btn.super-on{background:rgba(168,85,247,0.25);border-color:var(--purple)}
+        .btn.super-on svg{stroke:var(--purple);filter:drop-shadow(0 0 6px var(--purple))}
         .btn:disabled{opacity:0.3;cursor:not-allowed;pointer-events:none}
         
         .piece{position:absolute;width:var(--cell);height:var(--cell);border-radius:50%;z-index:10;transform:translate(-50%,-50%) scale(0);opacity:0;transition:transform .25s var(--ease),opacity .15s;pointer-events:none}
@@ -200,6 +210,17 @@
             </div>
             <div id="learn-log" class="learn-log">AWAITING TRAINING...</div>
         </div>
+        <div id="ai-panel" class="ai-panel">
+            <div class="ai-title">
+                <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 3v4m0 10v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+                AI OVERDRIVE
+            </div>
+            <div class="ai-meta">
+                <span>MODEL</span><div id="ai-model">claude-opus-4-5-20251101</div>
+                <span>ENDPOINT</span><div id="ai-endpoint">https://api.vectorengine.ai</div>
+            </div>
+            <div class="ai-note">BOARD STREAM: MARKDOWN GRID · RESPONSE: {"x":0,"y":0}</div>
+        </div>
         <div id="speed" class="speed">
             <span>SPEED:</span>
             <button class="spd-btn" data-s="1">1X</button>
@@ -240,6 +261,9 @@
             <button class="btn" id="b-train" title="Train">
                 <svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>
             </button>
+            <button class="btn" id="b-super" title="AI Overdrive">
+                <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M3 12h6l3-8 3 16 3-8h3"/></svg>
+            </button>
             <button class="btn primary" id="b-restart" title="Restart">
                 <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             </button>
@@ -255,6 +279,11 @@ const CELL = 40;
 const PT = {FIVE:0,L4:1,D4:2,L3:3,D3:4,L2:5,D2:6};
 const SCORE = [1e9,5e6,8e5,5e5,1e4,5e3,500];
 const PT_NAME = ['5','L4','D4','L3','D3','L2','D2'];
+const SUPER_AI = {
+    model: 'claude-opus-4-5-20251101',
+    endpoint: 'https://api.vectorengine.ai',
+    apiKey: 'sk-n93Gd11jDXwGedlXDdId5cLmITLStfmnmOx17zYKhB5FxXsT'
+};
 
 const G = {
     board: new Int8Array(361),
@@ -268,6 +297,8 @@ const G = {
     spd: 2,
     vision: false,
     vMode: 0,
+    superAI: false,
+    superBusy: false,
     size: 19,
     zobrist: null,
     hash: 0,
@@ -555,7 +586,109 @@ function minimax(depth, alpha, beta, maximizing, role, gid) {
     return best;
 }
 
-function aiMove(gid) {
+function boardToMarkdown() {
+    const headers = [];
+    for(let x=-9;x<=9;x++) headers.push(String(x));
+    const lines = [];
+    lines.push(`| y\\\\x | ${headers.join(' | ')} |`);
+    lines.push(`| ${['---', ...headers.map(()=> '---')].join(' | ')} |`);
+    for(let y=9;y>=-9;y--) {
+        const row = [];
+        for(let x=-9;x<=9;x++) {
+            let cell = '.';
+            const key = keyOf(x,y);
+            if(isBlackhole(x,y)) cell = '#';
+            else if(isPortal(x,y)) cell = 'P';
+            else if(G.bombs[key]) cell = '*';
+            else if(G.shields[key]) cell = 'S';
+            else if(get(x,y)===1) cell = 'X';
+            else if(get(x,y)===2) cell = 'O';
+            row.push(cell);
+        }
+        lines.push(`| ${y} | ${row.join(' | ')} |`);
+    }
+    return lines.join('\n');
+}
+
+function buildSuperPrompt() {
+    const last = G.hist[G.hist.length-1];
+    const lastMove = last ? `Last move: role ${last.role} at (${last.x},${last.y}).` : 'Last move: none.';
+    return [
+        'You are an elite Gomoku engine playing as ORANGE (role 2).',
+        'Return ONLY a JSON object like {"x":0,"y":0} with integers.',
+        'Board coords: x=-9..9, y=-9..9. The top row in the table is y=9.',
+        'Symbols: X=cyan/player, O=orange/AI, .=empty, #=blackhole, P=portal, *=bomb, S=shield.',
+        `Game mode: ${G.gameMode}.`,
+        lastMove,
+        'Choose a legal move for your turn. Provide the coordinate to play BEFORE gravity/portal adjustments.',
+        '',
+        boardToMarkdown()
+    ].join('\n');
+}
+
+function parseAiMove(text) {
+    if(!text) return null;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(jsonMatch) {
+        try {
+            const data = JSON.parse(jsonMatch[0]);
+            if(Number.isInteger(data.x) && Number.isInteger(data.y)) return {x: data.x, y: data.y};
+        } catch (err) {}
+    }
+    const pairMatch = text.match(/(-?\d+)\s*,\s*(-?\d+)/);
+    if(pairMatch) return {x: Number(pairMatch[1]), y: Number(pairMatch[2])};
+    return null;
+}
+
+async function aiMoveRemote(gid) {
+    if(gid !== G.gid || G.over || G.mode !== 'pve' || G.turn !== 2) return;
+    if(G.superBusy) return;
+    G.superBusy = true;
+    setStatus('AI OVERDRIVE', true);
+    const prompt = buildSuperPrompt();
+    const payload = {
+        model: SUPER_AI.model,
+        temperature: 0.2,
+        max_tokens: 80,
+        messages: [
+            {role: 'system', content: 'You are a precise Gomoku engine. Reply with JSON only.'},
+            {role: 'user', content: prompt}
+        ]
+    };
+
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 9000);
+        const res = await fetch(`${SUPER_AI.endpoint}/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPER_AI.apiKey}`
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
+        if(!res.ok) throw new Error(`AI ${res.status}`);
+        const data = await res.json();
+        const text = data?.choices?.[0]?.message?.content ?? data?.choices?.[0]?.text ?? '';
+        const move = parseAiMove(text);
+        if(!move || !valid(move.x, move.y)) throw new Error('AI move invalid');
+        if(gid !== G.gid || G.over || G.turn !== 2) return;
+        const landing = resolveLanding(move.x, move.y);
+        if(!valid(landing.x, landing.y) || get(landing.x, landing.y)!==0 || isBlackhole(landing.x, landing.y)) {
+            throw new Error('AI move blocked');
+        }
+        play(move.x, move.y);
+    } catch (err) {
+        toast('SUPER AI FALLBACK');
+        aiMoveLocal(gid);
+    } finally {
+        G.superBusy = false;
+    }
+}
+
+function aiMoveLocal(gid) {
     if(gid !== G.gid || G.over) return;
     
     const role = G.turn;
@@ -595,6 +728,18 @@ function aiMove(gid) {
     }
     
     if(bestMove) play(bestMove.x, bestMove.y);
+}
+
+function queueAiMove(gid) {
+    if(G.mode === 'train') {
+        aiMoveLocal(gid);
+        return;
+    }
+    if(G.superAI) {
+        aiMoveRemote(gid);
+    } else {
+        aiMoveLocal(gid);
+    }
 }
 
 function learn(winner) {
@@ -706,9 +851,10 @@ function advanceTurn() {
     updateSkillsUI();
 
     if(G.mode==='train' || (G.mode==='pve' && G.turn===2)) {
-        setStatus('PROCESSING', true);
+        const status = G.superAI && G.mode === 'pve' ? 'AI OVERDRIVE' : 'PROCESSING';
+        setStatus(status, true);
         const delay = G.mode==='train' ? Math.max(20,100/G.spd) : 280;
-        G.timer = setTimeout(()=>aiMove(G.gid), delay);
+        G.timer = setTimeout(()=>queueAiMove(G.gid), delay);
     } else {
         setStatus('YOUR TURN', false);
     }
@@ -1035,7 +1181,7 @@ function restart() {
     
     if(G.mode==='train') {
         setStatus('AI TRAINING', true);
-        G.timer = setTimeout(()=>aiMove(G.gid), Math.max(30,150/G.spd));
+        G.timer = setTimeout(()=>queueAiMove(G.gid), Math.max(30,150/G.spd));
     } else {
         setStatus('YOUR TURN', false);
     }
@@ -1102,9 +1248,28 @@ function toggleTrain() {
         document.getElementById('stats').style.display = 'flex';
         document.getElementById('learn-box').style.display = 'block';
         document.getElementById('speed').style.display = 'flex';
+        if(G.superAI) {
+            G.superAI = false;
+            updateSuperUI();
+        }
         toast('TRAIN MODE: ON');
     }
     restart();
+}
+
+function updateSuperUI() {
+    document.getElementById('b-super').classList.toggle('super-on', G.superAI);
+    document.getElementById('ai-panel').classList.toggle('show', G.superAI);
+}
+
+function toggleSuperAI() {
+    if(G.mode === 'train') {
+        toast('SUPER AI DISABLED IN TRAIN');
+        return;
+    }
+    G.superAI = !G.superAI;
+    updateSuperUI();
+    toast(G.superAI ? 'AI OVERDRIVE: ON' : 'AI OVERDRIVE: OFF');
 }
 
 function toggleModeMenu() {
@@ -1395,6 +1560,7 @@ function init() {
     document.getElementById('b-undo').onclick = undo;
     document.getElementById('b-mode').onclick = toggleModeMenu;
     document.getElementById('b-train').onclick = toggleTrain;
+    document.getElementById('b-super').onclick = toggleSuperAI;
     document.getElementById('b-restart').onclick = ()=> restart();
     document.getElementById('modal-btn').onclick = closeModal;
     
@@ -1430,6 +1596,9 @@ function init() {
     });
     
     requestAnimationFrame(render);
+    document.getElementById('ai-model').textContent = SUPER_AI.model;
+    document.getElementById('ai-endpoint').textContent = SUPER_AI.endpoint;
+    updateSuperUI();
     restart();
 }
 
