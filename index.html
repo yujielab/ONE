@@ -10,6 +10,9 @@
             --cyan:#00d4ff; --orange:#ff6a00; --white:#f0f8ff;
             --purple:#a855f7; --pink:#ec4899;
             --cyan-dim:rgba(0,212,255,0.15); --orange-dim:rgba(255,106,0,0.15);
+            --ui:#f6f7fb; --ui-soft:rgba(246,247,251,0.12);
+            --ui-border:rgba(246,247,251,0.45); --ui-glow:rgba(246,247,251,0.35);
+            --ui-text:rgba(246,247,251,0.92);
             --cell:40px; --ease:cubic-bezier(0.22,1,0.36,1);
         }
         *{box-sizing:border-box;margin:0;padding:0}
@@ -19,72 +22,72 @@
         #ui{position:fixed;inset:0;pointer-events:none;z-index:100;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
         
         .top{pointer-events:auto;margin-top:max(12px,env(safe-area-inset-top));display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;padding:0 12px}
-        .island{background:rgba(0,20,30,0.85);height:40px;border-radius:20px;display:flex;align-items:center;padding:0 18px;gap:10px;border:1px solid var(--cyan);box-shadow:0 0 20px rgba(0,212,255,0.25),inset 0 0 30px rgba(0,212,255,0.05)}
-        .spinner{width:14px;height:14px;border:2px solid transparent;border-top-color:var(--cyan);border-radius:50%;animation:spin .5s linear infinite;display:none}
+        .island{background:rgba(8,10,14,0.85);height:40px;border-radius:20px;display:flex;align-items:center;padding:0 18px;gap:10px;border:1px solid var(--ui-border);box-shadow:0 0 22px var(--ui-glow),inset 0 0 30px rgba(246,247,251,0.05)}
+        .spinner{width:14px;height:14px;border:2px solid transparent;border-top-color:var(--ui);border-radius:50%;animation:spin .5s linear infinite;display:none}
         .island.thinking .spinner{display:block}
-        .status{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);text-shadow:0 0 10px var(--cyan)}
+        .status{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--ui-text);text-shadow:0 0 10px var(--ui-glow)}
         
-        .mode-tag{background:rgba(168,85,247,0.2);border:1px solid var(--purple);padding:4px 12px;border-radius:12px;font-size:10px;color:var(--purple);letter-spacing:1px;display:none}
+        .mode-tag{background:rgba(246,247,251,0.08);border:1px solid var(--ui-border);padding:4px 12px;border-radius:12px;font-size:10px;color:var(--ui-text);letter-spacing:1px;display:none}
         .mode-tag.show{display:block}
         
-        .stats{background:rgba(30,15,0,0.85);padding:0 16px;height:40px;border-radius:20px;display:none;align-items:center;gap:12px;font-size:11px;border:1px solid var(--orange);box-shadow:0 0 20px rgba(255,106,0,0.2)}
-        .stat{display:flex;flex-direction:column;align-items:center;color:var(--orange)}
-        .stat b{font-size:14px;text-shadow:0 0 8px var(--orange)}
+        .stats{background:rgba(8,10,14,0.85);padding:0 16px;height:40px;border-radius:20px;display:none;align-items:center;gap:12px;font-size:11px;border:1px solid var(--ui-border);box-shadow:0 0 20px var(--ui-glow)}
+        .stat{display:flex;flex-direction:column;align-items:center;color:var(--ui-text)}
+        .stat b{font-size:14px;text-shadow:0 0 8px var(--ui-glow)}
         .stat span{font-size:8px;opacity:0.7;letter-spacing:0.5px}
         
         .bottom{margin-bottom:max(16px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;width:100%;pointer-events:none;gap:10px}
         
-        .mode-menu{background:rgba(0,20,30,0.95);border-radius:16px;padding:12px;border:1px solid rgba(168,85,247,0.4);display:none;pointer-events:auto;gap:6px;flex-wrap:wrap;justify-content:center;max-width:340px}
+        .mode-menu{background:rgba(8,10,14,0.95);border-radius:16px;padding:12px;border:1px solid var(--ui-border);display:none;pointer-events:auto;gap:6px;flex-wrap:wrap;justify-content:center;max-width:340px}
         .mode-menu.show{display:flex}
-        .mode-btn{background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);color:var(--purple);padding:8px 14px;border-radius:10px;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
-        .mode-btn svg{width:14px;height:14px;stroke:var(--purple);fill:none}
-        .mode-btn:hover{background:rgba(168,85,247,0.2);border-color:var(--purple)}
-        .mode-btn.active{background:var(--purple);color:#000;border-color:var(--purple)}
-        .mode-btn.active svg{stroke:#000}
+        .mode-btn{background:var(--ui-soft);border:1px solid rgba(246,247,251,0.2);color:var(--ui-text);padding:8px 14px;border-radius:10px;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+        .mode-btn svg{width:14px;height:14px;stroke:var(--ui-text);fill:none}
+        .mode-btn:hover{background:rgba(246,247,251,0.18);border-color:var(--ui-border)}
+        .mode-btn.active{background:var(--ui);color:#050507;border-color:var(--ui)}
+        .mode-btn.active svg{stroke:#050507}
         
-        .learn-box{background:rgba(0,20,30,0.9);border-radius:12px;padding:12px 16px;border:1px solid rgba(0,212,255,0.3);max-width:92%;display:none;pointer-events:auto}
-        .learn-title{font-size:10px;font-weight:700;color:var(--cyan);margin-bottom:6px;display:flex;align-items:center;gap:6px;letter-spacing:1px}
-        .learn-title svg{width:14px;height:14px;stroke:var(--cyan);fill:none}
-        .learn-log{font-size:9px;color:rgba(0,212,255,0.6);line-height:1.5;max-height:55px;overflow-y:auto;font-family:monospace}
+        .learn-box{background:rgba(8,10,14,0.9);border-radius:12px;padding:12px 16px;border:1px solid var(--ui-border);max-width:92%;display:none;pointer-events:auto}
+        .learn-title{font-size:10px;font-weight:700;color:var(--ui-text);margin-bottom:6px;display:flex;align-items:center;gap:6px;letter-spacing:1px}
+        .learn-title svg{width:14px;height:14px;stroke:var(--ui-text);fill:none}
+        .learn-log{font-size:9px;color:rgba(246,247,251,0.6);line-height:1.5;max-height:55px;overflow-y:auto;font-family:monospace}
 
-        .ai-panel{background:rgba(10,0,20,0.9);border-radius:12px;padding:12px 16px;border:1px solid rgba(168,85,247,0.35);max-width:92%;display:none;pointer-events:auto}
+        .ai-panel{background:rgba(8,10,14,0.9);border-radius:12px;padding:12px 16px;border:1px solid var(--ui-border);max-width:92%;display:none;pointer-events:auto}
         .ai-panel.show{display:block}
-        .ai-title{font-size:10px;font-weight:700;color:var(--purple);margin-bottom:6px;display:flex;align-items:center;gap:6px;letter-spacing:1px}
-        .ai-title svg{width:14px;height:14px;stroke:var(--purple);fill:none}
-        .ai-meta{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:9px;color:rgba(168,85,247,0.7);font-family:monospace}
+        .ai-title{font-size:10px;font-weight:700;color:var(--ui-text);margin-bottom:6px;display:flex;align-items:center;gap:6px;letter-spacing:1px}
+        .ai-title svg{width:14px;height:14px;stroke:var(--ui-text);fill:none}
+        .ai-meta{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:9px;color:rgba(246,247,251,0.7);font-family:monospace}
         .ai-meta span{opacity:0.6}
-        .ai-note{margin-top:6px;font-size:8px;color:rgba(168,85,247,0.55);letter-spacing:0.5px}
+        .ai-note{margin-top:6px;font-size:8px;color:rgba(246,247,251,0.55);letter-spacing:0.5px}
         
-        .speed{display:none;align-items:center;gap:6px;background:rgba(0,0,0,0.6);padding:5px 12px;border-radius:12px;pointer-events:auto;border:1px solid rgba(255,106,0,0.3)}
-        .speed span{font-size:9px;color:var(--orange);letter-spacing:0.5px}
-        .spd-btn{background:transparent;border:1px solid rgba(255,106,0,0.4);color:var(--orange);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;transition:all .2s}
-        .spd-btn:hover{background:rgba(255,106,0,0.15)}
-        .spd-btn.on{background:var(--orange);color:#000;border-color:var(--orange);box-shadow:0 0 15px rgba(255,106,0,0.5)}
+        .speed{display:none;align-items:center;gap:6px;background:rgba(0,0,0,0.6);padding:5px 12px;border-radius:12px;pointer-events:auto;border:1px solid var(--ui-border)}
+        .speed span{font-size:9px;color:var(--ui-text);letter-spacing:0.5px}
+        .spd-btn{background:transparent;border:1px solid var(--ui-border);color:var(--ui-text);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;transition:all .2s}
+        .spd-btn:hover{background:rgba(246,247,251,0.15)}
+        .spd-btn.on{background:var(--ui);color:#050507;border-color:var(--ui);box-shadow:0 0 15px var(--ui-glow)}
 
-        .skill-bar{display:flex;gap:6px;background:rgba(5,10,15,0.85);padding:8px 10px;border-radius:14px;border:1px solid rgba(0,212,255,0.25);pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:360px}
-        .skill-btn{display:flex;align-items:center;gap:6px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--cyan);padding:6px 10px;border-radius:10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;position:relative}
-        .skill-btn svg{width:14px;height:14px;stroke:var(--cyan);fill:none}
-        .skill-btn.active{background:var(--cyan);color:#000;border-color:var(--cyan)}
-        .skill-btn.active svg{stroke:#000}
+        .skill-bar{display:flex;gap:6px;background:rgba(5,10,15,0.85);padding:8px 10px;border-radius:14px;border:1px solid var(--ui-border);pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:360px}
+        .skill-btn{display:flex;align-items:center;gap:6px;background:var(--ui-soft);border:1px solid rgba(246,247,251,0.2);color:var(--ui-text);padding:6px 10px;border-radius:10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;position:relative}
+        .skill-btn svg{width:14px;height:14px;stroke:var(--ui-text);fill:none}
+        .skill-btn.active{background:var(--ui);color:#050507;border-color:var(--ui)}
+        .skill-btn.active svg{stroke:#050507}
         .skill-btn.disabled{opacity:0.35;cursor:not-allowed}
-        .skill-cd{position:absolute;top:-6px;right:-4px;background:rgba(0,0,0,0.8);color:var(--cyan);border:1px solid rgba(0,212,255,0.4);font-size:8px;padding:2px 5px;border-radius:10px}
+        .skill-cd{position:absolute;top:-6px;right:-4px;background:rgba(0,0,0,0.8);color:var(--ui-text);border:1px solid var(--ui-border);font-size:8px;padding:2px 5px;border-radius:10px}
         
-        .dock{background:rgba(5,15,20,0.95);padding:6px;border-radius:30px;border:1px solid rgba(0,212,255,0.25);display:flex;gap:4px;pointer-events:auto;box-shadow:0 0 40px rgba(0,0,0,0.5),0 0 20px rgba(0,212,255,0.1)}
+        .dock{background:rgba(5,15,20,0.95);padding:6px;border-radius:30px;border:1px solid var(--ui-border);display:flex;gap:4px;pointer-events:auto;box-shadow:0 0 40px rgba(0,0,0,0.5),0 0 20px rgba(246,247,251,0.08)}
         .btn{width:46px;height:46px;border-radius:50%;border:1px solid transparent;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s var(--ease)}
-        .btn svg{width:20px;height:20px;stroke:rgba(0,212,255,0.5);stroke-width:1.8;fill:none;transition:.2s}
-        .btn:hover{border-color:rgba(0,212,255,0.4)}
-        .btn:hover svg{stroke:var(--cyan)}
-        .btn:active{transform:scale(0.92);background:var(--cyan-dim)}
-        .btn.primary{background:linear-gradient(135deg,rgba(0,180,220,0.3),rgba(0,100,140,0.3));border-color:var(--cyan);box-shadow:0 0 20px rgba(0,212,255,0.3)}
-        .btn.primary svg{stroke:var(--cyan)}
-        .btn.on{background:var(--cyan-dim);border-color:var(--cyan)}
-        .btn.on svg{stroke:var(--cyan);filter:drop-shadow(0 0 4px var(--cyan))}
-        .btn.train-on{background:var(--orange-dim);border-color:var(--orange)}
-        .btn.train-on svg{stroke:var(--orange);filter:drop-shadow(0 0 4px var(--orange))}
-        .btn.mode-on{background:rgba(168,85,247,0.15);border-color:var(--purple)}
-        .btn.mode-on svg{stroke:var(--purple);filter:drop-shadow(0 0 4px var(--purple))}
-        .btn.super-on{background:rgba(168,85,247,0.25);border-color:var(--purple)}
-        .btn.super-on svg{stroke:var(--purple);filter:drop-shadow(0 0 6px var(--purple))}
+        .btn svg{width:20px;height:20px;stroke:rgba(246,247,251,0.65);stroke-width:1.8;fill:none;transition:.2s}
+        .btn:hover{border-color:var(--ui-border)}
+        .btn:hover svg{stroke:var(--ui)}
+        .btn:active{transform:scale(0.92);background:var(--ui-soft)}
+        .btn.primary{background:linear-gradient(135deg,rgba(246,247,251,0.25),rgba(246,247,251,0.08));border-color:var(--ui-border);box-shadow:0 0 20px var(--ui-glow)}
+        .btn.primary svg{stroke:var(--ui)}
+        .btn.on{background:var(--ui-soft);border-color:var(--ui-border)}
+        .btn.on svg{stroke:var(--ui);filter:drop-shadow(0 0 4px var(--ui-glow))}
+        .btn.train-on{background:rgba(246,247,251,0.18);border-color:var(--ui-border)}
+        .btn.train-on svg{stroke:var(--ui);filter:drop-shadow(0 0 4px var(--ui-glow))}
+        .btn.mode-on{background:rgba(246,247,251,0.18);border-color:var(--ui-border)}
+        .btn.mode-on svg{stroke:var(--ui);filter:drop-shadow(0 0 4px var(--ui-glow))}
+        .btn.super-on{background:rgba(246,247,251,0.25);border-color:var(--ui-border)}
+        .btn.super-on svg{stroke:var(--ui);filter:drop-shadow(0 0 6px var(--ui-glow))}
         .btn:disabled{opacity:0.3;cursor:not-allowed;pointer-events:none}
         
         .piece{position:absolute;width:var(--cell);height:var(--cell);border-radius:50%;z-index:10;transform:translate(-50%,-50%) scale(0);opacity:0;transition:transform .25s var(--ease),opacity .15s;pointer-events:none}
@@ -262,7 +265,10 @@
                 <svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>
             </button>
             <button class="btn" id="b-super" title="AI Overdrive">
-                <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M3 12h6l3-8 3 16 3-8h3"/></svg>
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l7 4v8l-7 4-7-4V6z"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
             </button>
             <button class="btn primary" id="b-restart" title="Restart">
                 <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -643,6 +649,13 @@ function parseAiMove(text) {
 async function aiMoveRemote(gid) {
     if(gid !== G.gid || G.over || G.mode !== 'pve' || G.turn !== 2) return;
     if(G.superBusy) return;
+    if(!SUPER_AI.apiKey || !SUPER_AI.apiKey.trim()) {
+        toast('SUPER AI KEY MISSING');
+        G.superAI = false;
+        updateSuperUI();
+        aiMoveLocal(gid);
+        return;
+    }
     G.superBusy = true;
     setStatus('AI OVERDRIVE', true);
     const prompt = buildSuperPrompt();
@@ -656,9 +669,10 @@ async function aiMoveRemote(gid) {
         ]
     };
 
+    let timeout;
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 9000);
+        timeout = setTimeout(() => controller.abort(), 9000);
         const res = await fetch(`${SUPER_AI.endpoint}/v1/chat/completions`, {
             method: 'POST',
             headers: {
@@ -668,9 +682,17 @@ async function aiMoveRemote(gid) {
             body: JSON.stringify(payload),
             signal: controller.signal
         });
-        clearTimeout(timeout);
-        if(!res.ok) throw new Error(`AI ${res.status}`);
-        const data = await res.json();
+        const rawText = await res.text();
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch (err) {
+            throw new Error('AI response invalid');
+        }
+        if(!res.ok) {
+            const msg = data?.error?.message || `AI ${res.status}`;
+            throw new Error(msg);
+        }
         const text = data?.choices?.[0]?.message?.content ?? data?.choices?.[0]?.text ?? '';
         const move = parseAiMove(text);
         if(!move || !valid(move.x, move.y)) throw new Error('AI move invalid');
@@ -681,9 +703,14 @@ async function aiMoveRemote(gid) {
         }
         play(move.x, move.y);
     } catch (err) {
+        if(G.superAI) {
+            G.superAI = false;
+            updateSuperUI();
+        }
         toast('SUPER AI FALLBACK');
         aiMoveLocal(gid);
     } finally {
+        if(timeout) clearTimeout(timeout);
         G.superBusy = false;
     }
 }
