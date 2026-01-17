@@ -285,6 +285,43 @@ const G = {
     }
 };
 
+const MODE_RULES = {
+    classic: {
+        init: () => {},
+        adjustMove: (pos) => pos,
+        afterPlace: () => {}
+    },
+    gravity: {
+        init: () => {},
+        adjustMove: (pos) => applyGravity(pos.x, pos.y),
+        afterPlace: () => {}
+    },
+    portal: {
+        init: () => initPortals(),
+        adjustMove: (pos) => portalExit(pos.x, pos.y) ?? pos,
+        afterPlace: () => {}
+    },
+    bomb: {
+        init: () => initBombs(),
+        adjustMove: (pos) => pos,
+        afterPlace: (pos, role) => triggerBomb(pos.x, pos.y, role)
+    },
+    blackhole: {
+        init: () => initBlackholes(),
+        adjustMove: (pos) => pos,
+        afterPlace: () => resolveBlackholes()
+    },
+    fog: {
+        init: () => { G.fogRadius = 3; },
+        adjustMove: (pos) => pos,
+        afterPlace: () => {}
+    }
+};
+
+function activeMode() {
+    return MODE_RULES[G.gameMode] || MODE_RULES.classic;
+}
+
 const AI = {
     weights: new Float32Array(7).fill(1),
     games: 0,
@@ -602,18 +639,7 @@ function applyGravity(x,y) {
 }
 
 function resolveLanding(x,y) {
-    let fx = x;
-    let fy = y;
-    if(G.gameMode === 'gravity') {
-        const grav = applyGravity(fx,fy);
-        fx = grav.x;
-        fy = grav.y;
-    }
-    if(G.gameMode === 'portal') {
-        const exit = portalExit(fx,fy);
-        if(exit) { fx = exit.x; fy = exit.y; }
-    }
-    return {x:fx,y:fy};
+    return activeMode().adjustMove({x,y});
 }
 
 function portalExit(x,y) {
@@ -621,7 +647,7 @@ function portalExit(x,y) {
     const idxPortal = G.portals.findIndex(p => p.x===x && p.y===y);
     if(idxPortal === -1 || G.portals.length < 2) return null;
     const target = G.portals[idxPortal === 0 ? 1 : 0];
-    if(get(target.x,target.y)!==0 || isBlackhole(target.x,target.y)) return null;
+    if(get(target.x,target.y)!==0 || isBlackhole(target.x,target.y)) return {x,y};
     return target;
 }
 
@@ -714,9 +740,10 @@ function handleSkill(x,y) {
         return true;
     }
     if(skill === 'barrier') {
-        if(get(x,y)!==0 || isBlackhole(x,y)) { toast('TARGET EMPTY'); return true; }
-        addShield(x,y);
-        spawnFx(x,y,'cyan');
+        const landing = resolveLanding(x,y);
+        if(get(landing.x,landing.y)!==0 || isBlackhole(landing.x,landing.y)) { toast('TARGET EMPTY'); return true; }
+        addShield(landing.x,landing.y);
+        spawnFx(landing.x,landing.y,'cyan');
         if(G.gameMode === 'blackhole') resolveBlackholes();
         data.cd = data.max;
         clearSkillMode();
@@ -724,13 +751,14 @@ function handleSkill(x,y) {
         return true;
     }
     if(skill === 'nova') {
-        if(get(x,y)!==0 || isBlackhole(x,y)) { toast('TARGET EMPTY'); return true; }
-        place(x,y,1);
-        const bombKey = keyOf(x,y);
-        if(G.bombs[bombKey]) triggerBomb(x,y,1);
+        const landing = resolveLanding(x,y);
+        if(get(landing.x,landing.y)!==0 || isBlackhole(landing.x,landing.y)) { toast('TARGET EMPTY'); return true; }
+        place(landing.x,landing.y,1);
+        const bombKey = keyOf(landing.x,landing.y);
+        if(G.bombs[bombKey]) triggerBomb(landing.x,landing.y,1);
         const adj = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
         adj.forEach(([dx,dy]) => {
-            const nx=x+dx, ny=y+dy;
+            const nx=landing.x+dx, ny=landing.y+dy;
             if(valid(nx,ny) && get(nx,ny)===2 && !G.shields[keyOf(nx,ny)]) {
                 remove(nx,ny);
                 spawnFx(nx,ny,'orange');
@@ -739,8 +767,8 @@ function handleSkill(x,y) {
         if(G.gameMode === 'blackhole') resolveBlackholes();
         data.cd = data.max;
         clearSkillMode();
-        if(get(x,y)!==0) {
-            const win = checkWin(x,y,1);
+        if(get(landing.x,landing.y)!==0) {
+            const win = checkWin(landing.x,landing.y,1);
             if(win) {
                 drawWinLine(win);
                 endGame(1);
@@ -772,18 +800,20 @@ function updateSkillsUI() {
 }
 
 function triggerBomb(x,y,role) {
+    const key = keyOf(x,y);
+    if(!G.bombs[key]) return;
     const affected = [];
     for(let dx=-1;dx<=1;dx++) {
         for(let dy=-1;dy<=1;dy++) {
             const nx=x+dx, ny=y+dy;
             if(valid(nx,ny) && get(nx,ny)!==0 && !isBlackhole(nx,ny)) {
-                const key = keyOf(nx,ny);
-                if(!G.shields[key]) affected.push({x:nx,y:ny});
+                const cellKey = keyOf(nx,ny);
+                if(!G.shields[cellKey]) affected.push({x:nx,y:ny});
             }
         }
     }
     affected.forEach(p => remove(p.x,p.y));
-    delete G.bombs[keyOf(x,y)];
+    delete G.bombs[key];
     pcs.querySelectorAll('.bomb').forEach(el => {
         if(+el.dataset.gx===x && +el.dataset.gy===y) el.remove();
     });
@@ -806,11 +836,7 @@ function play(x,y) {
     if(get(finalX,finalY)!==0) return;
     
     place(finalX,finalY,G.turn);
-
-    const bombKey = keyOf(finalX,finalY);
-    if(G.bombs[bombKey]) triggerBomb(finalX,finalY,G.turn);
-
-    if(G.gameMode === 'blackhole') resolveBlackholes();
+    activeMode().afterPlace({x: finalX, y: finalY}, G.turn);
 
     if(get(finalX,finalY)!==0) {
         const win = checkWin(finalX,finalY,G.turn);
@@ -901,18 +927,14 @@ function drawWinLine(w) {
 function initBlackholes() {
     G.blackholes = [];
     if(G.gameMode !== 'blackhole') return;
-    
-    const count = 3 + Math.floor(Math.random()*3);
+
+    const count = 4;
     const used = new Set(['0,0']);
-    
-    for(let i=0;i<count;i++) {
-        let x,y,key;
-        do {
-            x = Math.floor(Math.random()*13)-6;
-            y = Math.floor(Math.random()*13)-6;
-            key = keyOf(x,y);
-        } while(used.has(key) || (Math.abs(x)<2 && Math.abs(y)<2));
-        
+    while(G.blackholes.length < count) {
+        const x = Math.floor(Math.random()*15)-7;
+        const y = Math.floor(Math.random()*15)-7;
+        const key = keyOf(x,y);
+        if(used.has(key) || (Math.abs(x) < 2 && Math.abs(y) < 2)) continue;
         used.add(key);
         G.blackholes.push({x,y});
     }
@@ -921,18 +943,14 @@ function initBlackholes() {
 function initBombs() {
     G.bombs = {};
     if(G.gameMode !== 'bomb') return;
-    
-    const count = 4 + Math.floor(Math.random()*3);
+
+    const count = 6;
     const used = new Set(['0,0']);
-    
-    for(let i=0;i<count;i++) {
-        let x,y,key;
-        do {
-            x = Math.floor(Math.random()*13)-6;
-            y = Math.floor(Math.random()*13)-6;
-            key = keyOf(x,y);
-        } while(used.has(key) || (Math.abs(x)<2 && Math.abs(y)<2));
-        
+    while(Object.keys(G.bombs).length < count) {
+        const x = Math.floor(Math.random()*15)-7;
+        const y = Math.floor(Math.random()*15)-7;
+        const key = keyOf(x,y);
+        if(used.has(key) || (Math.abs(x) < 2 && Math.abs(y) < 2)) continue;
         used.add(key);
         G.bombs[key] = true;
     }
@@ -943,10 +961,10 @@ function initPortals() {
     if(G.gameMode !== 'portal') return;
     const used = new Set(['0,0']);
     while(G.portals.length < 2) {
-        const x = Math.floor(Math.random()*13)-6;
-        const y = Math.floor(Math.random()*13)-6;
+        const x = Math.floor(Math.random()*15)-7;
+        const y = Math.floor(Math.random()*15)-7;
         const key = keyOf(x,y);
-        if(used.has(key) || (Math.abs(x)<2 && Math.abs(y)<2)) continue;
+        if(used.has(key) || (Math.abs(x) < 2 && Math.abs(y) < 2)) continue;
         used.add(key);
         G.portals.push({x,y});
     }
@@ -997,13 +1015,14 @@ function restart() {
     G.over = false;
     G.hash = 0;
     G.shields = {};
+    G.blackholes = [];
+    G.bombs = {};
+    G.portals = [];
     AI.tt.clear();
     G.skillMode = null;
     Object.values(G.skills).forEach(s => s.cd = 0);
     
-    initBlackholes();
-    initBombs();
-    initPortals();
+    activeMode().init();
     
     pcs.innerHTML = '<div id="marker" class="marker" style="opacity:0"></div><div id="ghost" class="ghost"></div>';
     
@@ -1204,30 +1223,25 @@ function render() {
     if(G.gameMode === 'fog' && !G.over) {
         ctx.fillStyle = 'rgba(0,0,0,0.85)';
         ctx.fillRect(0,0,innerWidth,innerHeight);
-        
-        G.hist.forEach(m => {
-            if(m.role === 1) {
-                const sx = cx + m.x*CELL - CAM.x;
-                const sy = cy + m.y*CELL - CAM.y;
-                const grad = ctx.createRadialGradient(sx,sy,0,sx,sy,CELL*G.fogRadius);
-                grad.addColorStop(0, 'rgba(0,0,0,0)');
-                grad.addColorStop(0.7, 'rgba(0,0,0,0)');
-                grad.addColorStop(1, 'rgba(0,0,0,0.85)');
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.beginPath();
-                ctx.arc(sx,sy,CELL*G.fogRadius,0,Math.PI*2);
-                ctx.fill();
-                ctx.globalCompositeOperation = 'source-over';
-            }
-        });
-        
-        if(G.hist.length === 0) {
-            const grad = ctx.createRadialGradient(cx-CAM.x,cy-CAM.y,0,cx-CAM.x,cy-CAM.y,CELL*G.fogRadius);
+
+        const reveal = (gx,gy,boost=0) => {
+            const sx = cx + gx*CELL - CAM.x;
+            const sy = cy + gy*CELL - CAM.y;
+            const radius = CELL * (G.fogRadius + boost);
             ctx.globalCompositeOperation = 'destination-out';
             ctx.beginPath();
-            ctx.arc(cx-CAM.x,cy-CAM.y,CELL*G.fogRadius,0,Math.PI*2);
+            ctx.arc(sx,sy,radius,0,Math.PI*2);
             ctx.fill();
             ctx.globalCompositeOperation = 'source-over';
+        };
+
+        G.hist.forEach(m => {
+            const boost = m.role === G.turn ? 1 : 0;
+            reveal(m.x, m.y, boost);
+        });
+
+        if(G.hist.length === 0) {
+            reveal(0,0,1);
         }
     }
     
