@@ -596,8 +596,8 @@ function boardToMarkdown() {
     const headers = [];
     for(let x=-9;x<=9;x++) headers.push(String(x));
     const lines = [];
-    lines.push(`| y\\\\x | ${headers.join(' | ')} |`);
-    lines.push(`| ${['---', ...headers.map(()=> '---')].join(' | ')} |`);
+    lines.push(`| y\\x | ${headers.join(' | ')} |`);
+    lines.push(`| --- | ${headers.map(()=> '---').join(' | ')} |`);
     for(let y=9;y>=-9;y--) {
         const row = [];
         for(let x=-9;x<=9;x++) {
@@ -618,7 +618,7 @@ function boardToMarkdown() {
 
 function buildSuperPrompt() {
     const last = G.hist[G.hist.length-1];
-    const lastMove = last ? `Last move: role ${last.role} at (${last.x},${last.y}).` : 'Last move: none.';
+    const lastMove = last ? `Last move: role ${last.role} at ${last.x},${last.y}.` : 'Last move: none.';
     return [
         'You are an elite Gomoku engine playing as ORANGE (role 2).',
         'Return ONLY a JSON object like {"x":0,"y":0} with integers.',
@@ -649,16 +649,21 @@ function parseAiMove(text) {
 async function aiMoveRemote(gid) {
     if(gid !== G.gid || G.over || G.mode !== 'pve' || G.turn !== 2) return;
     if(G.superBusy) return;
-    if(!SUPER_AI.apiKey || !SUPER_AI.apiKey.trim()) {
-        toast('SUPER AI KEY MISSING');
+    
+    // 检查配置是否完整
+    if(!SUPER_AI.apiKey || !SUPER_AI.endpoint) {
+        toast('AI CONFIG MISSING');
         G.superAI = false;
         updateSuperUI();
         aiMoveLocal(gid);
         return;
     }
+
     G.superBusy = true;
     setStatus('AI OVERDRIVE', true);
+    
     const prompt = buildSuperPrompt();
+    
     const payload = {
         model: SUPER_AI.model,
         temperature: 0.2,
@@ -672,8 +677,12 @@ async function aiMoveRemote(gid) {
     let timeout;
     try {
         const controller = new AbortController();
-        timeout = setTimeout(() => controller.abort(), 9000);
-        const res = await fetch(`${SUPER_AI.endpoint}/v1/chat/completions`, {
+        timeout = setTimeout(() => controller.abort(), 100000); // 100秒超时
+        
+        // 拼接 URL 并注入 API Key
+        const url = `${SUPER_AI.endpoint}/v1/chat/completions`;
+        
+        const res = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -682,43 +691,51 @@ async function aiMoveRemote(gid) {
             body: JSON.stringify(payload),
             signal: controller.signal
         });
+
         const rawText = await res.text();
         let data;
         try {
             data = JSON.parse(rawText);
-        } catch (err) {
-            throw new Error('AI response invalid');
+        } catch (e) {
+            console.error("AI Response Raw:", rawText);
+            throw new Error('Invalid JSON response');
         }
+        
         if(!res.ok) {
-            const msg = data?.error?.message || `AI ${res.status}`;
-            throw new Error(msg);
+            console.error("AI Error Data:", data);
+            throw new Error(data?.error?.message || `API Error ${res.status}`);
         }
-        const text = data?.choices?.[0]?.message?.content ?? data?.choices?.[0]?.text ?? '';
+
+        // 解析返回内容
+        const text = data?.choices?.[0]?.message?.content ?? '';
         const move = parseAiMove(text);
+        
         if(!move || !valid(move.x, move.y)) throw new Error('AI move invalid');
+        
+        // 再次检查游戏状态，防止网络延迟期间游戏已结束
         if(gid !== G.gid || G.over || G.turn !== 2) return;
+        
+        // 检查落点是否合法
         const landing = resolveLanding(move.x, move.y);
         if(!valid(landing.x, landing.y) || get(landing.x, landing.y)!==0 || isBlackhole(landing.x, landing.y)) {
             throw new Error('AI move blocked');
         }
+        
         play(move.x, move.y);
+
     } catch (err) {
+        console.error("AI Request Failed:", err);
+        
+        // 如果是网络错误或 API 错误，自动切回本地 AI 并提示
         if(G.superAI) {
             G.superAI = false;
             updateSuperUI();
-        }
-        const message = err?.message ?? '';
-        const isConnectionError = err?.name === 'AbortError'
-            || err instanceof TypeError
-            || /Failed to fetch/i.test(message)
-            || /NetworkError/i.test(message)
-            || /Network/i.test(message);
-        if(isConnectionError) {
-            toast('无法连接');
-            setStatus('无法连接', false);
+            toast('AI ERROR: Switching to Local');
         } else {
-            toast('SUPER AI FALLBACK');
+            toast('AI CONNECTION FAILED');
         }
+        
+        // 降级处理：使用本地算法
         aiMoveLocal(gid);
     } finally {
         if(timeout) clearTimeout(timeout);
@@ -798,7 +815,7 @@ function learn(winner) {
     
     AI.learns++;
     updateStats();
-    addLog(`GAME#: 'ORANGE' WIN`);
+    addLog(`GAME#${AI.games}: 'ORANGE' WIN`);
 }
 
 function addLog(msg) {
@@ -1336,7 +1353,7 @@ function toggleVision() {
     if(!G.vision) {
         G.vision=true;
         G.vMode=0;
-        toast(`VISION: ${names[G.vMode]}`);
+        toast(`VISION: ${names[0]}`);
     } else if(G.vMode < 2) {
         G.vMode += 1;
         toast(`VISION: ${names[G.vMode]}`);
@@ -1380,7 +1397,7 @@ function updateVision() {
         }
         
         el.classList.add(lvl);
-        el.innerHTML = `<div class="heat-ring"></div><div class="heat-val"></div>`;
+        el.innerHTML = `<div class="heat-ring"></div><div class="heat-val">${val}</div>`;
         frag.appendChild(el);
     }
     
@@ -1645,4 +1662,4 @@ init();
 })();
 </script>
 </body>
-</html>
+</html></html></html>
